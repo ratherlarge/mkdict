@@ -3,8 +3,9 @@ class mkdict(object):
     
     class dict(object):
         def __init__(self, mkdict):
+            self._dict = dict()
             self.mkdict = mkdict
-        def __del__(self):
+        def __delitem__(self, key):
             pass
     
     class _FullKeyPtr(object):
@@ -15,7 +16,7 @@ class mkdict(object):
         self.dict = mkdict.dict(self)
         self._keymap = dict()
         self._dict_backup = None
-        self._keymap_backup
+        self._keymap_backup = None
         self.update(d, **kwargs)
         
     def __str__(self):
