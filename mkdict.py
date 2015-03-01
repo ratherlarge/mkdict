@@ -122,5 +122,5 @@ class mkdict(object):
             self._keymap = self._keymap_backup
             
     def _key_already_set(self, key):
-        del self[key]
+        self.remove(key)
         
