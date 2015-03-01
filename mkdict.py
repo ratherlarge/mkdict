@@ -6,8 +6,6 @@ class mkdict(object):
             self.mkdict = mkdict
         def __del__(self):
             pass
-		def remove(self):
-			pass
     
     class _FullKeyPtr(object):
         def __init__(self, fullkey):
