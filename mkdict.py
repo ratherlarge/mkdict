@@ -41,7 +41,15 @@ class mkdict(object):
         self._dict[key] = value
         
     def __delitem__(self, key):
-        self.remove(key)
+        fullkey = self.fullkey(key)
+        
+        if isinstance(fullkey, tuple):
+            for k in fullkey:
+                del self._keymap[k]
+        else:
+            del self._keymap[fullkey]
+            
+        del self._dict[fullkey]
         
     def __contains__(self, key):
         return key in self._keymap or key in self._dict
@@ -79,12 +87,7 @@ class mkdict(object):
     
     def remove(self, key, return_value=False):
         if key in self._dict:
-            if isinstance(key, tuple):
-                for k in key:
-                    del self._keymap[k]
-            else:
-                del self._keymap[key]
-            del self._dict[key]
+            del self[key]
             return
         
         current_fullkey = self.fullkey(key)
