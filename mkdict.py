@@ -1,16 +1,18 @@
 
 class mkdict(object):
     
-    class _dict(object):
+    class dict(object):
         def __init__(self, mkdict):
             self.mkdict = mkdict
+        def __del__(self):
+            pass
     
     class _FullKeyPtr(object):
         def __init__(self, fullkey):
             self.fullkey = fullkey
             
     def __init__(self, d={}, **kwargs):
-        self.dict = dict()
+        self.dict = mkdict.dict(self)
         self._keymap = dict()
         self._dict_backup = None
         self._keymap_backup
