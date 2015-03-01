@@ -1,6 +1,10 @@
 
 class mkdict(object):
     
+    class _dict(object):
+        def __init__(self, mkdict):
+            self.mkdict = mkdict
+    
     class _FullKeyPtr(object):
         def __init__(self, fullkey):
             self.fullkey = fullkey
