@@ -2,13 +2,33 @@
 class mkdict(object):
     
     class dict(object):
+
         def __init__(self, mkdict):
             self._dict = dict()
             self.mkdict = mkdict
+
+        def __str__(self):
+            return str(self._dict)
+
+        def __setitem__(self, key, value):
+            self.mkdict[key] = value
+
+        def __getitem__(self, key):
+            return self._dict[key]
+
+        def __contains__(self, key):
+            return key in self._dict
+
         def __delitem__(self, key):
-            pass
+            if key not in self:
+                raise KeyError(key)
+            del self.mkdict[key]
+
+        def __getattr__(self, attr):
+            return getattr(self._dict, attr)
     
     class _FullKeyPtr(object):
+
         def __init__(self, fullkey):
             self.fullkey = fullkey
             
@@ -45,18 +65,19 @@ class mkdict(object):
             else:
                 self._keymap[key] = self._FullKeyPtr(key)
                 
-        self.dict[key] = value
+        self.dict._dict[key] = value
         
     def __delitem__(self, key):
-        fullkey = self.fullkey(key)
+        if key in self._keymap:
+            key = self.fullkey(key)
         
-        if isinstance(fullkey, tuple):
-            for k in fullkey:
+        if isinstance(key, tuple):
+            for k in key:
                 del self._keymap[k]
         else:
-            del self._keymap[fullkey]
+            del self._keymap[key]
             
-        del self.dict[fullkey]
+        del self.dict._dict[key]
         
     def __contains__(self, key):
         return key in self._keymap or key in self.dict
@@ -96,8 +117,8 @@ class mkdict(object):
         else:
             new_fullkey = tuple(new_fullkey)
             
-        self.dict[new_fullkey] = self.dict[current_fullkey]
-        del self.dict[current_fullkey]
+        self.dict._dict[new_fullkey] = self.dict[current_fullkey]
+        del self.dict._dict[current_fullkey]
         self._keymap[key].fullkey = new_fullkey
         del self._keymap[key]
         
