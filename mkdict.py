@@ -10,7 +10,13 @@ class mkdict(object):
         def __str__(self):
             return str(self._dict)
 
+        def __repr__(self):
+            return str(self)
+
         def __setitem__(self, key, value):
+            if key not in self:
+                if key in self.mkdict._keymap:
+                    self.mkdict.remove(key)
             self.mkdict[key] = value
 
         def __getitem__(self, key):
@@ -31,6 +37,12 @@ class mkdict(object):
 
         def __init__(self, fullkey):
             self.fullkey = fullkey
+
+        def __str__(self):
+            return str(self.fullkey)
+
+        def __repr__(self):
+            return str(self)
             
     def __init__(self, d={}, **kwargs):
         self.dict = mkdict.dict(self)
@@ -40,7 +52,10 @@ class mkdict(object):
         self.update(d, **kwargs)
         
     def __str__(self):
-        return str(self.dict)
+        return str(self.items())
+
+    def __repr__(self):
+        return str(self)
         
     def __len__(self):
         return len(self.dict)
@@ -64,6 +79,15 @@ class mkdict(object):
                     self._keymap[k] = fullkey_ptr
             else:
                 self._keymap[key] = self._FullKeyPtr(key)
+
+        '''if key not in self.dict and isinstance(key, tuple):
+            # get rid of set??
+            key = tuple(set(key))
+            fullkey_ptr = self._FullKeyPtr(key)
+            for k in key:
+                if k in self:
+                    self._key_already_set(k)
+                self._keymap[k] = fullkey_ptr'''
                 
         self.dict._dict[key] = value
         
@@ -87,6 +111,13 @@ class mkdict(object):
         
     def __getattr__(self, attr):
         return getattr(self.dict, attr)
+
+    def items(self):
+        return {k: self[v.fullkey] for k, v in self._keymap.items()}
+
+    def iteritems(self):
+        return {k: self[v.fullkey]
+                for k, v in self._keymap.iteritems()}.iteritems()
         
     def update(self, d={}, **kwargs):
         d.update(kwargs)
@@ -96,6 +127,9 @@ class mkdict(object):
     def clear(self):
         self.dict.clear()
         self._keymap.clear()
+
+    def keys(self):
+        return self._keymap.keys()
         
     def fullkey(self, key):
         return self._keymap[key].fullkey
