@@ -79,15 +79,6 @@ class mkdict(object):
                     self._keymap[k] = fullkey_ptr
             else:
                 self._keymap[key] = self._FullKeyPtr(key)
-
-        '''if key not in self.dict and isinstance(key, tuple):
-            # get rid of set??
-            key = tuple(set(key))
-            fullkey_ptr = self._FullKeyPtr(key)
-            for k in key:
-                if k in self:
-                    self._key_already_set(k)
-                self._keymap[k] = fullkey_ptr'''
                 
         self.dict._dict[key] = value
         
