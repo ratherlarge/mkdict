@@ -59,6 +59,9 @@ class mkdict(object):
         
     def __len__(self):
         return len(self.dict)
+
+    def __iter__(self):
+        return iter(self.keys())
         
     def __getitem__(self, key):
         if key in self._keymap:
@@ -96,9 +99,6 @@ class mkdict(object):
         
     def __contains__(self, key):
         return key in self._keymap or key in self.dict
-        
-    def __iter__(self):
-        return iter(self.dict)
         
     def __getattr__(self, attr):
         return getattr(self.dict, attr)
