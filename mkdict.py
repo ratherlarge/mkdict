@@ -13,9 +13,12 @@ class mkdict(object):
         def __repr__(self):
             return str(self)
 
+        def __len__(self):
+            return len(self._dict)
+
         def __setitem__(self, key, value):
             if key not in self:
-                if key in self.mkdict._keymap:
+                if key in self.mkdict._key_map:
                     self.mkdict.remove(key)
             self.mkdict[key] = value
 
@@ -32,23 +35,27 @@ class mkdict(object):
 
         def __getattr__(self, attr):
             return getattr(self._dict, attr)
+
+        def clear(self):
+            self._dict.clear()
+            self.mkdict._key_map.clear()
     
     class _FullKeyPtr(object):
 
-        def __init__(self, fullkey):
-            self.fullkey = fullkey
+        def __init__(self, full_key):
+            self.full_key = full_key
 
         def __str__(self):
-            return str(self.fullkey)
+            return str(self.full_key)
 
         def __repr__(self):
             return str(self)
             
     def __init__(self, d={}, **kwargs):
         self.dict = mkdict.dict(self)
-        self._keymap = dict()
+        self._key_map = dict()
         self._dict_backup = None
-        self._keymap_backup = None
+        self._key_map_backup = None
         self.update(d, **kwargs)
         
     def __str__(self):
@@ -58,57 +65,56 @@ class mkdict(object):
         return str(self)
         
     def __len__(self):
-        return len(self.dict)
+        return len(self._key_map)
 
     def __iter__(self):
         return iter(self.keys())
         
     def __getitem__(self, key):
-        if key in self._keymap:
-            key = self.fullkey(key)
+        if key in self._key_map:
+            key = self.full_key(key)
         return self.dict[key]
         
     def __setitem__(self, key, value):
-        if key in self._keymap:
-            key = self.fullkey(key)
+        if key in self._key_map:
+            key = self.full_key(key)
             
         if key not in self.dict:
             if isinstance(key, tuple):
-                key = tuple(set(key))
-                fullkey_ptr = self._FullKeyPtr(key)
+                #key = tuple(set(key))
+                full_key_ptr = self._FullKeyPtr(key)
                 for k in key:
                     if k in self:
                         self._key_already_set(k)
-                    self._keymap[k] = fullkey_ptr
+                    self._key_map[k] = full_key_ptr
             else:
-                self._keymap[key] = self._FullKeyPtr(key)
+                self._key_map[key] = self._FullKeyPtr(key)
                 
         self.dict._dict[key] = value
         
     def __delitem__(self, key):
-        if key in self._keymap:
-            key = self.fullkey(key)
+        if key in self._key_map:
+            key = self.full_key(key)
         
         if isinstance(key, tuple):
             for k in key:
-                del self._keymap[k]
+                del self._key_map[k]
         else:
-            del self._keymap[key]
+            del self._key_map[key]
             
         del self.dict._dict[key]
         
     def __contains__(self, key):
-        return key in self._keymap or key in self.dict
+        return key in self._key_map or key in self.dict
         
     def __getattr__(self, attr):
         return getattr(self.dict, attr)
 
     def items(self):
-        return {k: self[v.fullkey] for k, v in self._keymap.items()}
+        pass
 
     def iteritems(self):
-        return {k: self[v.fullkey]
-                for k, v in self._keymap.iteritems()}.iteritems()
+        pass
         
     def update(self, d={}, **kwargs):
         d.update(kwargs)
@@ -116,14 +122,17 @@ class mkdict(object):
             self[k] = v
     
     def clear(self):
-        self.dict.clear()
-        self._keymap.clear()
+        self.dict._dict.clear()
+        self._key_map.clear()
 
     def keys(self):
-        return self._keymap.keys()
+        return self._key_map.keys()
         
-    def fullkey(self, key):
-        return self._keymap[key].fullkey
+    def full_key(self, key):
+        return self._key_map[key].full_key
+
+    def has_key(self, key):
+        return key in self
         
     def append(self, key, otherkey):
         pass
@@ -133,36 +142,36 @@ class mkdict(object):
             del self[key]
             return
         
-        current_fullkey = self.fullkey(key)
-        new_fullkey = list(current_fullkey)
-        new_fullkey.remove(key)
+        current_full_key = self.full_key(key)
+        new_full_key = list(current_full_key)
+        new_full_key.remove(key)
         
-        if len(new_fullkey) == 1:
-            new_fullkey = new_fullkey[0]
+        if len(new_full_key) == 1:
+            new_full_key = new_full_key[0]
         else:
-            new_fullkey = tuple(new_fullkey)
+            new_full_key = tuple(new_full_key)
             
-        self.dict._dict[new_fullkey] = self.dict[current_fullkey]
-        del self.dict._dict[current_fullkey]
-        self._keymap[key].fullkey = new_fullkey
-        del self._keymap[key]
+        self.dict._dict[new_full_key] = self.dict[current_full_key]
+        del self.dict._dict[current_full_key]
+        self._key_map[key].full_key = new_full_key
+        del self._key_map[key]
         
     def aliases(self, key):
-        fullkey = self.fullkey(key)
-        if isinstance(fullkey, tuple):
-            aliases = list(fullkey)
+        full_key = self.full_key(key)
+        if isinstance(full_key, tuple):
+            aliases = list(full_key)
             aliases.remove(key)
             return aliases
         return list()
         
     def backup(self):
         self._dict_backup = self.dict.copy()
-        self._keymap_backup = self._keymap.copy()
+        self._key_map_backup = self._key_map.copy()
         
     def revert(self):
-        if None not in (self._dict_backup, self._keymap_backup):
+        if None not in (self._dict_backup, self._key_map_backup):
             self.dict = self._dict_backup
-            self._keymap = self._keymap_backup
+            self._key_map = self._key_map_backup
             
     def _key_already_set(self, key):
         self.remove(key)
