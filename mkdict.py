@@ -71,12 +71,12 @@ class mkdict(object):
         return iter(self.keys())
         
     def __getitem__(self, key):
-        if key in self._key_map:
+        if key in self:
             key = self.full_key(key)
         return self.dict[key]
         
     def __setitem__(self, key, value):
-        if key in self._key_map:
+        if key in self:
             key = self.full_key(key)
             
         if key not in self.dict:
@@ -93,7 +93,7 @@ class mkdict(object):
         self.dict._dict[key] = value
         
     def __delitem__(self, key):
-        if key in self._key_map:
+        if key in self:
             key = self.full_key(key)
         
         if isinstance(key, tuple):
@@ -105,7 +105,7 @@ class mkdict(object):
         del self.dict._dict[key]
         
     def __contains__(self, key):
-        return key in self._key_map or key in self.dict
+        return key in self._key_map
         
     def __getattr__(self, attr):
         return getattr(self.dict, attr)
