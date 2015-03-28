@@ -18,7 +18,7 @@ class mkdict(object):
 
         def __setitem__(self, key, value):
             if key not in self and key in self.mkdict:
-                self.mkdict.remove(key)
+                self.mkdict._key_already_set()
             self.mkdict[key] = value
 
         def __getitem__(self, key):
