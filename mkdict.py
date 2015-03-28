@@ -17,9 +17,8 @@ class mkdict(object):
             return len(self._dict)
 
         def __setitem__(self, key, value):
-            if key not in self:
-                if key in self.mkdict._key_map:
-                    self.mkdict.remove(key)
+            if key not in self and key in self.mkdict:
+                self.mkdict.remove(key)
             self.mkdict[key] = value
 
         def __getitem__(self, key):
@@ -59,7 +58,7 @@ class mkdict(object):
         self.update(d, **kwargs)
         
     def __str__(self):
-        return str(self.items())
+        return str(dict(self.items()))
 
     def __repr__(self):
         return str(self)
@@ -73,15 +72,15 @@ class mkdict(object):
     def __getitem__(self, key):
         if key in self:
             key = self.full_key(key)
-        return self.dict[key]
+            return self.dict[key]
+        raise KeyError(key)
         
     def __setitem__(self, key, value):
         if key in self:
             key = self.full_key(key)
-            
+
         if key not in self.dict:
             if isinstance(key, tuple):
-                #key = tuple(set(key))
                 full_key_ptr = self._FullKeyPtr(key)
                 for k in key:
                     if k in self:
@@ -111,10 +110,10 @@ class mkdict(object):
         return getattr(self.dict, attr)
 
     def items(self):
-        pass
+        return [(k, self[k]) for k, v in self._key_map.items()]
 
     def iteritems(self):
-        pass
+        return iter(self.items())
         
     def update(self, d={}, **kwargs):
         d.update(kwargs)
