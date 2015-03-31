@@ -18,7 +18,7 @@ class mkdict(object):
 
         def __setitem__(self, key, value):
             if key not in self and key in self.mkdict:
-                self.mkdict._key_already_set()
+                self.mkdict._key_already_set(key)
             self.mkdict[key] = value
 
         def __getitem__(self, key):
@@ -30,6 +30,10 @@ class mkdict(object):
         def __delitem__(self, key):
             if key not in self:
                 raise KeyError(key)
+            
+            if isinstance(key, tuple):
+                key = key[0]
+
             del self.mkdict[key]
 
         def __getattr__(self, attr):
@@ -92,16 +96,15 @@ class mkdict(object):
         self.dict._dict[key] = value
         
     def __delitem__(self, key):
-        if key in self:
-            key = self.full_key(key)
-        
-        if isinstance(key, tuple):
-            for k in key:
+        full_key = self.full_key(key)
+
+        if isinstance(full_key, tuple):
+            for k in full_key:
                 del self._key_map[k]
         else:
-            del self._key_map[key]
-            
-        del self.dict._dict[key]
+            del self._key_map[full_key]
+
+        del self.dict._dict[full_key]
         
     def __contains__(self, key):
         return key in self._key_map
@@ -136,13 +139,15 @@ class mkdict(object):
     def append(self, key, otherkey):
         pass
     
-    def remove(self, key, return_value=False):
-        if key in self.dict:
-            del self[key]
+    def remove(self, key):
+        full_key = self.full_key(key)
+
+        if not isinstance(full_key, tuple):
+            del self.dict._dict[full_key]
+            del self._key_map[full_key]
             return
-        
-        current_full_key = self.full_key(key)
-        new_full_key = list(current_full_key)
+
+        new_full_key = list(full_key)
         new_full_key.remove(key)
         
         if len(new_full_key) == 1:
@@ -150,8 +155,8 @@ class mkdict(object):
         else:
             new_full_key = tuple(new_full_key)
             
-        self.dict._dict[new_full_key] = self.dict[current_full_key]
-        del self.dict._dict[current_full_key]
+        self.dict._dict[new_full_key] = self.dict[full_key]
+        del self.dict._dict[full_key]
         self._key_map[key].full_key = new_full_key
         del self._key_map[key]
         
