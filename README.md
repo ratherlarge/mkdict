@@ -1,2 +1,2 @@
 # mkdict
-A custom dictionary that allows a single value to have multiple associated keys
+A dictionary that allows multiple keys for one value
