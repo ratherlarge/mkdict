@@ -133,7 +133,7 @@ class mkdict(object):
     def update(self, d={}, **kwargs):
         if isinstance(d, mkdict.dict):
             d = d.mkdict._dict
-        if isinstance(d, mkdict):
+        elif isinstance(d, mkdict):
             d = d._dict
 
         d.update(kwargs)
