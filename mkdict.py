@@ -2,27 +2,23 @@
 
 class mkdict(object):
     """ A dictionary that allows multiple keys for one value """
-    _init_dict = True
+
+
+    class _Container(object):
+
+        def __init__(self, _object):
+            self.object = _object
+
     
     class dict(object):
-        """ Interface for mkdict.dict for dict-like behaviour """
-        _init_mkdict = True
+        """ Interface for mkdict._dict for dict-like behaviour """
 
         def __init__(self, d={}, **kwargs):
-            """ This is to avoid recursion when allowing:
-            
-            >>> d = mkdict.dict({'what': 'ever'})
-            
-            or...
-            
-            >>> d = mkdict({'what', 'ever'})
-            """
-            if self._init_mkdict:
-                mkdict._init_dict = False
-                self.mkdict = mkdict(d, **kwargs)
-                mkdict._init_dict = True
-
-                self.mkdict.dict = self
+            if isinstance(d, mkdict._Container):
+                self.mkdict = d.object
+            else:
+                self.mkdict = mkdict(mkdict._Container(self))
+                self.mkdict.update(d, **kwargs)
 
         def __str__(self):
             return str(self.mkdict._dict)
@@ -34,25 +30,6 @@ class mkdict(object):
             return len(self.mkdict._dict)
 
         def __setitem__(self, key, value):
-            """ Desired behaviour:
-            
-            >>> d = mkdict()
-            >>> d['what', 'ever'] = 'testing'
-            >>>
-            >>> d
-            >>> {'what': 'testing', 'ever': 'testing'}
-            >>>
-            >>> d.dict
-            >>> {('what', 'ever'): 'testing'}
-            >>>
-            >>> d.dict['what'] = 'new value'
-            >>>
-            >>> d
-            >>> {'what': 'new value', 'ever': 'testing'}
-            >>>
-            >>> d.dict
-            >>> {'what': 'new value', 'ever': 'testing'}
-            """
             if key not in self and key in self.mkdict:
                 self.mkdict._key_already_set(key)
 
@@ -73,41 +50,12 @@ class mkdict(object):
 
             del self.mkdict[key]
 
-        def __getattr__(self, attr):
-            return getattr(self.mkdict._dict, attr)
-
         def clear(self):
             self.mkdict.clear()
+
     
     class _FullKeyPtr(object):
-        """ Desired behaviour:
         
-        full_key_ptr1 = _FullKeyPtr()
-        mkdict._key_map -> {'key1', full_key_ptr1,
-                            'key2', full_key_ptr1}
-        
-        >>> d = mkdict()
-        >>> d['what', 'ever'] = 'testing'
-        >>> d._key_map
-        >>>
-        >>> # d._key_map:
-        >>> # {'what': full_key_ptr1, 'ever': full_key_ptr1}
-        >>> d._key_map
-        >>> {'what': ('what', 'ever'), 'ever': ('what', 'ever')}
-        >>>
-        >>> d['what']
-        >>> 'testing'
-        >>>
-        >>> # full_key = _key_map['ever'].full_key
-        >>> # i.e. full_key = ('what', 'ever')
-        >>> # _dict[full_key] = 'test'
-        >>> d['ever'] = 'test'
-        >>>
-        >>>
-        >>> d['what']
-        >>> 'test'
-        """
-
         def __init__(self, full_key):
             self.full_key = full_key
 
@@ -117,28 +65,18 @@ class mkdict(object):
         def __repr__(self):
             return str(self)
             
+
     def __init__(self, d={}, **kwargs):
-
-        """ This is to avoid recursion when allowing:
-            
-        >>> d = mkdict({'what': 'ever'})
-        
-        or...
-        
-        >>> d = mkdict.dict({'what': 'ever'})
-        """
-        if self._init_dict:
-            mkdict.dict._init_mkdict = False
-            self.dict = mkdict.dict()
-            mkdict.dict._init_mkdict = True
-
-            self.dict.mkdict = self
-        
         self._dict = dict()
         self._key_map = dict()
         self._dict_backup = None
         self._key_map_backup = None
-        self.update(d, **kwargs)
+
+        if isinstance(d, mkdict._Container):
+            self.dict = d.object
+        else:
+            self.dict = mkdict.dict(mkdict._Container(self))
+            self.update(d, **kwargs)
         
     def __str__(self):
         return str(dict(self.items()))
@@ -156,25 +94,7 @@ class mkdict(object):
         full_key = self.full_key(key)
         return self.dict[full_key]
         
-    def __setitem__(self, key, value):
-        """ Desired behaviour:
-            
-        >>> d = mkdict()
-        >>> d['what', 'ever'] = 'testing'
-        >>>
-        >>> d
-        >>> {'what': 'testing', 'ever': 'testing'}
-        >>>
-        >>> d.dict
-        >>> {('what', 'ever'): 'testing'}
-        >>>
-        >>> d['what'] = 'new value'
-        >>> d
-        >>> {'what': 'new value', 'ever': 'new value'}
-        >>>
-        >>> d.dict
-        >>> {('what', 'ever'): 'new value'}
-        """
+    def __setitem__(self, key, value): 
         if key in self:
             key = self.full_key(key)
 
@@ -203,9 +123,6 @@ class mkdict(object):
         
     def __contains__(self, key):
         return key in self._key_map
-        
-    def __getattr__(self, attr):
-        return getattr(self._dict, attr)
 
     def items(self):
         return [(k, self[k]) for k, v in self._key_map.items()]
@@ -214,6 +131,11 @@ class mkdict(object):
         return iter(self.items())
         
     def update(self, d={}, **kwargs):
+        if isinstance(d, mkdict.dict):
+            d = d.mkdict._dict
+        if isinstance(d, mkdict):
+            d = d._dict
+
         d.update(kwargs)
         for k, v in d.items():
             self[k] = v
