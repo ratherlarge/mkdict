@@ -5,6 +5,12 @@ class mkdict(object):
 
 
     class _Container(object):
+        """ This is used to wrap an object to avoid infinite 
+        recursion when calling my own methods from the inside.
+        
+        If a method sees this container, it assumes it has been
+        called from the inside and not the user.
+        """
 
         def __init__(self, _object):
             self.object = _object
@@ -14,6 +20,12 @@ class mkdict(object):
         """ Interface for mkdict._dict for dict-like behaviour """
 
         def __init__(self, d={}, **kwargs):
+            """ Using a mkdict._Container to avoid infinite
+            recursion when allowing:
+                
+            >>> d = mkdict({'what': 'ever'})
+            >>> d = mkdict.dict({'what': 'ever'})
+            """
             if isinstance(d, mkdict._Container):
                 self.mkdict = d.object
             else:
@@ -30,6 +42,26 @@ class mkdict(object):
             return len(self.mkdict._dict)
 
         def __setitem__(self, key, value):
+            """ Desired behaviour:
+                
+            >>> d = mkdict()
+            >>>
+            >>> d['what', 'ever'] = 'testing'
+            >>> d
+            {'what': 'testing', 'ever': 'testing'}
+            >>> d.dict
+            {('what', 'ever'): 'testing'}
+            >>> d['what'] is d['ever']
+            True
+            >>>
+            >>> d.dict['what'] = 'new value'
+            >>> d
+            {'what': 'new value', 'ever': 'testing'}
+            >>> d.dict
+            {'what': 'new value', 'ever': 'testing'}
+            >>> d['what'] is d['ever']
+            False
+            """
             if key not in self and key in self.mkdict:
                 self.mkdict._key_already_set(key)
 
@@ -104,7 +136,26 @@ class mkdict(object):
         full_key = self.full_key(key)
         return self.dict[full_key]
         
-    def __setitem__(self, key, value): 
+    def __setitem__(self, key, value):
+        """ Desired behaviour:
+            
+        >>> d = mkdict()
+        >>> d['what', 'ever'] = 'testing'
+        >>> d
+        {'what': 'testing', 'ever': 'testing'}
+        >>> d.dict
+        {('what', 'ever'): 'testing'}
+        >>> d['what'] is d['ever']
+        True
+        >>>
+        >>> d['what'] = 'hello'
+        >>> d
+        {'what': 'hello', 'ever': 'hello'}
+        >>> d.dict
+        {('what', 'ever'): 'hello'}
+        >>> d['what'] is d['ever']
+        True
+        """
         if key in self:
             key = self.full_key(key)
 
