@@ -53,6 +53,16 @@ class mkdict(object):
         def clear(self):
             self.mkdict.clear()
 
+        def update(self, d, **kwargs):
+            if isinstance(d, mkdict.dict):
+                d = d.mkdict._dict
+            elif isinstance(d, mkdict):
+                d = d._dict
+
+            d.update(**kwargs)
+            for k, v in d.items():
+                self[k] = v
+
     
     class _FullKeyPtr(object):
         
