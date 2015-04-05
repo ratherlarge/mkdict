@@ -20,7 +20,7 @@ class mkdict(object):
         """ Interface for mkdict._dict for dict-like behaviour """
 
         def __init__(self, d={}, **kwargs):
-            """ Using a mkdict._Container to avoid infinite
+            """ Using an mkdict._Container to avoid infinite
             recursion when allowing:
                 
             >>> d = mkdict({'what': 'ever'})
@@ -30,7 +30,7 @@ class mkdict(object):
                 self.mkdict = d.object
             else:
                 self.mkdict = mkdict(mkdict._Container(self))
-                self.mkdict.update(d, **kwargs)
+                self.update(d, **kwargs)
 
         def __str__(self):
             return str(self.mkdict._dict)
@@ -91,7 +91,7 @@ class mkdict(object):
             elif isinstance(d, mkdict):
                 d = d._dict
 
-            d.update(**kwargs)
+            d.update(kwargs)
             for k, v in d.items():
                 self[k] = v
 
