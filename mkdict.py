@@ -111,8 +111,13 @@ class mkdict(object):
     def __init__(self, d={}, **kwargs):
         self._dict = dict()
         self._key_map = dict()
+<<<<<<< HEAD
         self._dict_backup = self._dict
         self._key_map_backup = self._key_map
+=======
+        self._dict_backup = None
+        self._key_map_backup = None
+>>>>>>> 25ff384e590671df9b094933805fe0c33c7fbcb9
 
         if isinstance(d, mkdict._Container):
             self.dict = d.object
@@ -214,6 +219,7 @@ class mkdict(object):
     def has_key(self, key):
         return key in self
         
+<<<<<<< HEAD
     def alias(self, key, new_key):
         full_key = self.full_key(key)
 
@@ -229,6 +235,10 @@ class mkdict(object):
         del self._dict[full_key]
         self._key_map[new_key] = self._key_map[key]
         self._key_map[new_key].full_key = new_full_key
+=======
+    def append(self, key, otherkey):
+        pass
+>>>>>>> 25ff384e590671df9b094933805fe0c33c7fbcb9
     
     def remove(self, key):
         full_key = self.full_key(key)
@@ -253,11 +263,15 @@ class mkdict(object):
         
     def aliases(self, key):
         full_key = self.full_key(key)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 25ff384e590671df9b094933805fe0c33c7fbcb9
         if isinstance(full_key, tuple):
             aliases = list(full_key)
             aliases.remove(key)
             return aliases
+<<<<<<< HEAD
 
         return list()
         
@@ -268,6 +282,15 @@ class mkdict(object):
     def revert(self):
         self._dict = self._dict_backup
         self._key_map = self._key_map_backup
+=======
+        return list()
+        
+    def backup(self):
+        pass
+        
+    def revert(self):
+        pass
+>>>>>>> 25ff384e590671df9b094933805fe0c33c7fbcb9
             
     def _key_already_set(self, key):
         self.remove(key)
