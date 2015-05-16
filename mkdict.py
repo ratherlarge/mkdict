@@ -109,10 +109,8 @@ class mkdict(object):
             
 
     def __init__(self, d={}, **kwargs):
-        self._dict = dict()
-        self._key_map = dict()
-        self._dict_backup = self._dict
-        self._key_map_backup = self._key_map
+        self._dict_backup = self._dict = dict()
+        self._key_map_backup = self._key_map = dict()
 
         if isinstance(d, mkdict._Container):
             self.dict = d.object
