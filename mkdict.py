@@ -154,6 +154,9 @@ class mkdict(object):
         >>> d['what'] is d['ever']
         True
         """
+        if isinstance(key, list):
+            key = tuple(key)
+
         if key in self:
             key = self.full_key(key)
 
