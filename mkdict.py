@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class mkdict(object):
     """ A dictionary that allows multiple keys for one value """
 
@@ -62,6 +63,9 @@ class mkdict(object):
             >>> d['what'] is d['ever']
             False
             """
+            if isinstance(key, list):
+                key = tuple(key)
+
             if key not in self and key in self.mkdict:
                 self.mkdict._key_already_set(key)
 
